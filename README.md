@@ -684,6 +684,17 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 
 </details>
 <details>
+<summary><strong>connectome-host</strong> - Recipe-configured host for long-lived agents with a terminal and web console</summary>
+
+- **Source**: source
+- **License**: unfree
+- **Homepage**: https://github.com/anima-research/connectome-host
+- **Usage**: `nix run github:numtide/llm-agents.nix#connectome-host -- --help`
+- **Nix**: [packages/connectome-host/package.nix](packages/connectome-host/package.nix)
+- **Documentation**: See [packages/connectome-host/README.md](packages/connectome-host/README.md) for detailed usage
+
+</details>
+<details>
 <summary><strong>grok-bot</strong> - Grok Bot desktop agent — AI teammates that finish the work</summary>
 
 - **Source**: binary
