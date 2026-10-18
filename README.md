@@ -1187,6 +1187,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 
 </details>
 <details>
+<summary><strong>kata</strong> - Local-first issue tracker for coding agents and humans</summary>
+
+- **Source**: source
+- **License**: MIT
+- **Homepage**: https://www.katatracker.com/
+- **Usage**: `nix run github:numtide/llm-agents.nix#kata -- --help`
+- **Nix**: [packages/kata/package.nix](packages/kata/package.nix)
+
+</details>
+<details>
 <summary><strong>luvus</strong> - Mission control for your AI coding agents</summary>
 
 - **Source**: source
