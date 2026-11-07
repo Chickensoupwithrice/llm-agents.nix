@@ -15,16 +15,16 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "maki";
-  version = "0.6.4";
+  version = "0.7.1";
 
   src = fetchFromGitHub {
     owner = "tontinton";
     repo = "maki";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-dCIsPwD6xCIh+etbybpTkf0NtCRBG4icdpDgsNazIAE=";
+    hash = "sha256-Jtpi75JH2LIlrfNTVDwePYNqVuBYRPGyG/f1aZuTmUw=";
   };
 
-  cargoHash = "sha256-auo1N+ZEIDLVDbMP24MZcnG0kmNuAPt3waAus09OLic=";
+  cargoHash = "sha256-5+hgRI3XyPdRcefSokYUXHrgjp2k8i1+9D3lCujm9uk=";
 
   # unpinCargoMsrvHook: upstream pins rust-version = "1.99", newer than the
   # rustc in nixpkgs.
@@ -37,8 +37,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   buildInputs = [ openssl ] ++ lib.optionals stdenv.hostPlatform.isLinux [ dbus ];
 
-  # isahc's native-tls-static would otherwise build OpenSSL from source.
-  env.OPENSSL_NO_VENDOR = "1";
+  env = {
+    # isahc's native-tls-static would otherwise build OpenSSL from source.
+    OPENSSL_NO_VENDOR = "1";
+    # Upstream's fat LTO alone outlasts the CI build timeout.
+    CARGO_PROFILE_RELEASE_LTO = "thin";
+  };
 
   cargoBuildFlags = [
     "--package"

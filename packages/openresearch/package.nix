@@ -4,10 +4,14 @@
   stdenv,
   rustPlatform,
   fetchFromGitHub,
-  fetchpatch,
+  fetchurl,
+  runCommand,
   makeWrapper,
   installAgentSkills,
-  mkUpdater,
+  fetchPnpmDeps,
+  nodejs,
+  pnpm_11,
+  pnpmConfigHook,
   bash,
   coreutils,
   gawk,
@@ -15,37 +19,41 @@
   gnutar,
   openssh,
   procps,
+  python3,
   xdg-utils,
   versionCheckHook,
   versionCheckHomeHook,
 }:
 
 let
-  hashes = builtins.fromJSON (builtins.readFile ./hashes.json);
+  inlangPlugin =
+    name: version: hash:
+    let
+      tgz = fetchurl {
+        url = "https://registry.npmjs.org/@inlang/${name}/-/${name}-${version}.tgz";
+        inherit hash;
+      };
+    in
+    runCommand "${name}-${version}.js" { } "tar -xzOf ${tgz} package/dist/index.js > $out";
+  inlangMessageFormat =
+    inlangPlugin "plugin-message-format" "4.5.5"
+      "sha512-wFA0x9isGySoim2JUP2NNMslLnYrYQESbWfhv8qJueRH+d3c6iHkkQJxMF3D7PZ9BafEaj6fw0HJhoTa5c2EMw==";
+  inlangMFunctionMatcher =
+    inlangPlugin "plugin-m-function-matcher" "2.3.4"
+      "sha512-Jd2ccLjEqyUAj+y54fb/8O1bEREsaHcPOw6PBercVjDMTvcUqAQZ8V/1t5Z0ZmSCuWgof7XxnmBcwgMuf0Xk+A==";
 in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "openresearch";
-  inherit (hashes) version cargoHash;
+  version = "0.2.24";
 
   src = fetchFromGitHub {
     owner = "alphaXiv";
     repo = "OpenResearch";
     tag = "v${finalAttrs.version}";
-    inherit (hashes) hash;
+    hash = "sha256-XpRfSLoHOvxSYuSp/k2OOs6BbaFI3/QNzQ0PUty8x3c=";
   };
 
-  patches = [
-    # APFS rejects the non-UTF-8 fixture. Remove once a release includes upstream #678.
-    (fetchpatch {
-      url = "https://github.com/alphaXiv/OpenResearch/commit/e1f6a2cf600116b2526f5f7d517983f760992509.patch";
-      hash = "sha256-3f0TjrlCzHi43OArxYfAdnCM2A1gwVW4l8P+ZEOEQE0=";
-    })
-    # Pending upstream #698; remove once a release includes the readiness EINTR fix.
-    (fetchpatch {
-      url = "https://github.com/alphaXiv/OpenResearch/commit/f53d9b0e8956ab14cbc85314c7780d697e8f2009.patch";
-      hash = "sha256-MrfzGMAj6Gw4JMajr18wytL/J9WJrTRTvHZbUTtT6zc=";
-    })
-  ];
+  cargoHash = "sha256-kjQbNCcofkB8vpKGhKA4tYvpbTTmQdAZ3aXrE13CR+g=";
 
   nativeBuildInputs = [
     makeWrapper
@@ -56,14 +64,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   dontInstallAgentSkills = true;
 
   postPatch = ''
+    cp -r ${finalAttrs.passthru.ui} ui/dist
     substituteInPlace $(grep -rl '#!/bin/sh' src) \
       --replace-fail '#!/bin/sh' '#!${bash}/bin/sh'
     substituteInPlace src/commands/up.rs \
       --replace-fail '"sh",' '"${bash}/bin/sh",'
     # The fake ssh in these tests calls cat and, for `ssh -G`, /usr/bin/ssh;
     # neither exists in the sandbox.
-    substituteInPlace tests/compute_cli.rs \
-      --replace-fail '{}:/usr/bin:/bin"' '{}:${coreutils}/bin"' \
+    substituteInPlace tests/cli/compute_cli.rs \
+      --replace-fail '{}:/usr/bin:/bin"' '{}:${
+        lib.makeBinPath [
+          bash
+          coreutils
+          gnutar
+          python3
+        ]
+      }"' \
       --replace-fail 'exec /usr/bin/ssh' 'exec ${openssh}/bin/ssh'
   '';
 
@@ -72,14 +88,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   checkFlags = [
-    # 2s wall-clock assertion on SIGTERM handling; flaky on loaded builders
-    "--skip=jobs::ssh::tests::host_wrapper_finishes_cooperative_term_promptly"
     # needs live ssh control sockets under /tmp, which the sandbox lacks
     "--skip=jobs::ssh::sharing::tests::native_config_shares_only_matching_live_sockets_and_preserves_user_settings"
+    # runs /bin/sh, which the Linux sandbox lacks
+    "--skip=jobs::rental::tests::rental_bootstrap_runs_bash_syntax_through_the_posix_login_shell"
+    # the compacted sqlite file is not smaller than before in our build
+    "--skip=local::native_store::tests::opencode_sweep_purges_settled_unreferenced_roots_and_compacts"
   ]
   # child process is not reaped within the test's deadline in the darwin sandbox
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     "--skip=jobs::localbox::tests::local_job_lifecycle"
+    # does not see the job it just spawned as running in the darwin sandbox
+    "--skip=jobs::localbox::tests::orphaned_job_probe_distinguishes_an_abandoned_launch_from_a_missing_pid"
   ];
 
   dontUseCargoParallelTests = true; # ETXTBSY: tests write+exec scripts
@@ -92,6 +112,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gnutar
     openssh
     procps
+    # the ACP tests launch python3 fixture agents
+    python3
   ];
 
   postInstall = ''
@@ -132,11 +154,51 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   passthru = {
     category = "Workflow & Project Management";
-    updater = mkUpdater {
-      kind = "github-source";
-      purl = "pkg:github/alphaXiv/OpenResearch";
-      depHashKey = "cargoHash";
-    };
+
+    ui = stdenv.mkDerivation (uiAttrs: {
+      pname = "openresearch-ui";
+      inherit (finalAttrs) version src;
+      sourceRoot = "${finalAttrs.src.name}/ui";
+
+      pnpmDeps = fetchPnpmDeps {
+        inherit (uiAttrs)
+          pname
+          version
+          src
+          sourceRoot
+          ;
+        pnpm = pnpm_11;
+        fetcherVersion = 4;
+        hash = "sha256-umrx7ElpSzWsfW2pTgGWY6eKQ1/xGrrQ07iORW7sAHk=";
+      };
+
+      nativeBuildInputs = [
+        nodejs
+        pnpm_11
+        pnpmConfigHook
+      ];
+
+      # The inlang project loads its plugins from jsdelivr at build time.
+      postPatch = ''
+        install -Dm644 ${inlangMessageFormat} project.inlang/plugins/message-format.js
+        install -Dm644 ${inlangMFunctionMatcher} project.inlang/plugins/m-function-matcher.js
+        substituteInPlace project.inlang/settings.json \
+          --replace-fail "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@4/dist/index.js" "./project.inlang/plugins/message-format.js" \
+          --replace-fail "https://cdn.jsdelivr.net/npm/@inlang/plugin-m-function-matcher@2/dist/index.js" "./project.inlang/plugins/m-function-matcher.js"
+      '';
+
+      buildPhase = ''
+        runHook preBuild
+        pnpm build
+        runHook postBuild
+      '';
+
+      installPhase = ''
+        runHook preInstall
+        cp -r dist $out
+        runHook postInstall
+      '';
+    });
   };
 
   meta = with lib; {

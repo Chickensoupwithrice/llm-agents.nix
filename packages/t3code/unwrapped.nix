@@ -29,14 +29,14 @@
 
 let
   pname = "t3code";
-  version = "0.1.0";
+  version = "0.1.7";
   pnpm = pnpm_11;
 
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${version}";
-    hash = "sha256-P82DqoY1E9wtROwu5Nr7MB/I1PdmZHWXXR4nRa4GWXM=";
+    hash = "sha256-oQLmDCDuJPNBsf8MHMD2xhMq+CF6L836/PQesM91Clw=";
   };
 
   # The web build's third-party-licenses vite plugin downloads SPDX license
@@ -89,7 +89,10 @@ let
     exec = "t3code-desktop %U";
     icon = "t3code";
     categories = [ "Development" ];
-    startupWMClass = "t3code";
+    # On Wayland the app_id comes from app.setDesktopName(), which upstream
+    # hardcodes to com.t3tools.T3Code.desktop. X11 uses `--class t3code`, which
+    # shells still match to this entry by its t3code.desktop file name.
+    startupWMClass = "com.t3tools.T3Code";
   };
 in
 stdenv.mkDerivation {
@@ -125,7 +128,7 @@ stdenv.mkDerivation {
       pnpmWorkspaces
       ;
     fetcherVersion = 4;
-    hash = "sha256-oX4tOu20tYO3ci7VvSEL8eFgxAYWp5HlQFSfAWJGJmg=";
+    hash = "sha256-hVpxbHZ5syedAc1Zc20TkxSgB6VA3XQGubQMx6e0njA=";
   };
 
   nativeBuildInputs = [
@@ -233,6 +236,13 @@ stdenv.mkDerivation {
     ''}
 
     find "$out/libexec/t3code" "$desktop/libexec/t3code" -xtype l -delete
+
+    # Native modules ship prebuilds for every platform, and node-pty also
+    # bundles Windows-only ConPTY binaries.
+    find "$out/libexec/t3code" "$desktop/libexec/t3code" \
+      \( -path '*/prebuilds/*' ! -path '*/prebuilds/*/*' ! -name ${platformKey} \
+        -o -path '*/node-pty/third_party' \) \
+      -prune -exec rm -r {} +
 
     mkdir -p "$desktop/bin"
     makeWrapper ${lib.getExe electron_44} "$desktop/bin/t3code-desktop" \

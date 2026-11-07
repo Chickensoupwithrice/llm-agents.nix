@@ -2,7 +2,7 @@
   formatelf,
   bun,
   copyDesktopItems,
-  electron_42,
+  electron_43,
   fetchFromGitHub,
   flake,
   lib,
@@ -17,7 +17,7 @@
 }:
 
 let
-  electron = electron_42;
+  electron = electron_43;
   versionData = builtins.fromJSON (builtins.readFile ./hashes.json);
   inherit (versionData) version hash nodeModulesHash;
   nodePlatform = "${stdenvNoCC.hostPlatform.node.platform}-${stdenvNoCC.hostPlatform.node.arch}";
@@ -235,8 +235,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         makeWrapper ${lib.getExe electron} $out/bin/opencode-desktop \
           --inherit-argv0 \
           --set ELECTRON_FORCE_IS_PACKAGED 1 \
-          --add-flags $out/opt/opencode-desktop/resources/app.asar \
-          --add-flags "--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true --wayland-text-input-version=3"
+          --add-flags $out/opt/opencode-desktop/resources/app.asar
       '')
       ''
         runHook postInstall

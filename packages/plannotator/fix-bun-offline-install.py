@@ -22,6 +22,7 @@ DEP_SECTIONS = [
 # Runtime dependencies needed by the workspaces we build.  Hoisting them to the
 # root workspace lets Bun resolve them directly from the bun2nix cache.
 HOISTED = {
+    "@agentclientprotocol/sdk",
     "@joplin/turndown-plugin-gfm",
     "@modelcontextprotocol/client",
     "@modelcontextprotocol/server",
@@ -82,7 +83,8 @@ def _remove_deps(data: dict, names: set[str]) -> bool:
 
 def _exactify_ranges(data: dict, resolved: dict[str, str]) -> bool:
     changed = False
-    for section in DEP_SECTIONS:
+    # patch_lockfile exactifies every range in bun.lock, overrides included.
+    for section in [*DEP_SECTIONS, "overrides"]:
         deps = data.get(section)
         if not isinstance(deps, dict):
             continue

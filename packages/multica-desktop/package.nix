@@ -9,12 +9,12 @@
   nodejs,
   pnpm_10,
   pnpmConfigHook,
-  electron_42,
+  electron_44,
   multica,
 }:
 
 let
-  electron = electron_42;
+  electron = electron_44;
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "multica-desktop";
@@ -23,7 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
     pnpm = pnpm_10;
-    hash = "sha256-tOd/AANBqAV0mOvJdVDlLFHe3mg9I2/u98ic/NAyjQc=";
+    hash = "sha256-b7Cs2ZN5t/CTdrgVkNQqv0A2tr3ASWoHBeMSHc9FVEA=";
     fetcherVersion = 3;
   };
 
@@ -65,7 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     makeWrapper ${lib.getExe electron} $out/bin/multica-desktop \
       --add-flags $app/out/main/index.js \
-      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}" \
       --inherit-argv0
 
     runHook postInstall

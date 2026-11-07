@@ -1,0 +1,8 @@
+{
+  "version": "2.29.0-5723181030440960",
+  "hashes": {
+    "x86_64-linux": "sha256-OmdXBLmzowcOBsDVDTUzBDr1RSHNFcZUlOnNwr8YlmQ=",
+    "aarch64-linux": "sha256-hJvCU8WHceycmlL4iPBgfK1cO0NbgkHu+LKGnwYS9gc=",
+    "aarch64-darwin": "sha256-e/FUGd2uEPry6dBwTizs/e8SqoWPGbI9k2i+t4IDsLc="
+  }
+}

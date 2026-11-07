@@ -15,25 +15,57 @@
 }:
 
 let
+  # TODO: drop once NixOS/nixpkgs#579978 is in our nixpkgs input.
+  ctranslate2 =
+    let
+      test = "test_float32_float16_and_independent_chunks";
+      pkg = python3.pkgs.ctranslate2;
+    in
+    if lib.elem test (pkg.disabledTests or [ ]) then
+      pkg
+    else
+      pkg.overridePythonAttrs (old: {
+        disabledTests = old.disabledTests or [ ] ++ [ test ];
+      });
+  faster-whisper = python3.pkgs.faster-whisper.override { inherit ctranslate2; };
+
+  # Hermes' Anthropic adapter passes httpx objects; SDK 1.x requires httpx2.
+  # Keep this private dependency aligned with the upstream extra, not nixpkgs.
+  anthropic = python3.pkgs.anthropic.overridePythonAttrs (old: {
+    version = "0.125.0";
+    src = fetchFromGitHub {
+      owner = "anthropics";
+      repo = "anthropic-sdk-python";
+      tag = "v0.125.0";
+      hash = "sha256-bNB8tVjFegfRARy8BNLHvBjkpO8YC3Z+DPirADrwyl4=";
+    };
+    dependencies =
+      builtins.filter (dependency: dependency.pname or "" != "httpx2") old.dependencies
+      ++ [
+        python3.pkgs.httpx
+        python3.pkgs.distro
+      ];
+  });
+
   # Native (PyO3) runtime for hermes' Relay lifecycle and shared metrics.
   # PyPI ships wheels only, so build from source with maturin.
   # Version is kept in range of hermes' pyproject constraint by update.py.
   nemo-relay = python3.pkgs.buildPythonPackage rec {
     pname = "nemo-relay";
-    version = "0.10.2";
+    version = "0.11.1";
     pyproject = true;
 
     src = fetchFromGitHub {
       owner = "NVIDIA";
       repo = "NeMo-Relay";
       tag = version;
-      hash = "sha256-f57Y+bp8q3r9OvY6EVgOHNucW4mXip/Cb6ey99JhP/Y=";
+      hash = "sha256-BwoeCwHbvVNtx4fkR1uIRh95T63UBMbvrJtiE6+/BWY=";
     };
 
     cargoDeps = rustPlatform.fetchCargoVendor {
       inherit src;
       name = "nemo-relay-${version}";
-      hash = "sha256-tu/Ug/o1qdBD635oA5J6WJjKaJKM6NsFrpmSNH5kasE=";
+      hash = "sha256-xjImAQmLLOzSuO0LMRnoIZ5SoYMv7WBFSkJxgL+AOX4=";
     };
 
     nativeBuildInputs =
@@ -266,15 +298,15 @@ let
     };
   };
 
-  version = "0.22.2";
+  version = "0.22.7";
   # The commit of the tag. Hermes ignores an install stamp without one.
-  rev = "d923a5eb487a17c0a68801bba9ef0f56c81040a8";
+  rev = "b200f5bc60e31588ba2cb60e288029c4a54ba5fa";
 
   src = fetchFromGitHub {
     owner = "NousResearch";
     repo = "hermes-agent";
     tag = "v${version}";
-    hash = "sha256-Zs5Jr2BZ89RHbyj2WX2y4hIh4Vuwz8mJvGJooWytCk4=";
+    hash = "sha256-dE56klC4H3s2Is6lP9wZQRCbjw9RklAB9luCd7Xzxic=";
     # contributors/emails/ holds paths differing only in case; they collapse
     # on case-insensitive stores (APFS) so the NAR hash diverges between
     # Linux and darwin. Unused at build/runtime. Upstream:
@@ -292,7 +324,7 @@ let
   hermes-frontend = buildNpmPackage {
     pname = "hermes-frontend";
     inherit version src;
-    npmDepsHash = "sha256-45CV8Qavo5UQlUfSQuWzhZK1Xicx9iW8dDDsDvAM2Dc=";
+    npmDepsHash = "sha256-S+wEg5voD8xi4sIKCZJrxAAW5AetjD1zpcNLkN+CCQ4=";
 
     # The apps/desktop workspace pulls in electron; skip its binary download
     # and all install scripts — the esbuild/vite builds below don't need them.
@@ -475,6 +507,26 @@ let
   # resolves the gateway import root from HERMES_PYTHON_SRC_ROOT.
   pythonEnv = python3.withPackages (_: hermesDeps);
 
+  # Hermes' dependency manager (PM) installs and launches managed tools such as
+  # npx/uvx MCP servers. It runs in its own environment, which a Nix install
+  # names through `pmRuntime` in the install stamp (upstream nix/pm-runtime.nix).
+  pmRuntime = python3.buildEnv.override {
+    extraLibs = with python3.pkgs; [
+      packaging
+      tomli-w
+      ruamel-yaml
+      truststore
+    ];
+    postBuild = ''
+      printf '%s\n' '${
+        builtins.toJSON {
+          python = python3.interpreter;
+          inherit (python3) sitePackages;
+        }
+      }' > "$out/pm-runtime.json"
+    '';
+  };
+
   installStamp = writeText "install-stamp.json" (
     builtins.toJSON {
       schemaVersion = 2;
@@ -486,6 +538,7 @@ let
       source = "nix";
       distribution = "nix";
       updateMechanism = "external";
+      pmRuntime = toString pmRuntime;
       # Desktop: use an external Hermes instead of a bundled one.
       payload = "bootstrap";
     }
@@ -503,15 +556,22 @@ python3.pkgs.buildPythonApplication {
   # These re-exec sys.executable, which is the bare interpreter without Hermes'
   # dependencies under Nix. Use the wrapper-provided env.
   postPatch = ''
-    substituteInPlace tui_gateway/server.py \
-      --replace-fail 'argv = [sys.executable, "-m", "tui_gateway.slash_worker"' \
-        'argv = [os.environ.get("HERMES_PYTHON", sys.executable), "-m", "tui_gateway.slash_worker"'
+    # Fail an update rather than silently keeping an SDK that upstream replaced.
+    ${python3.interpreter} -c 'import tomllib; p = tomllib.load(open("pyproject.toml", "rb")); expected = "anthropic==${anthropic.version}"; actual = p["project"]["optional-dependencies"]["anthropic"]; assert actual == [expected], f"Anthropic pin changed: {actual}; review the private SDK override"'
     substituteInPlace tools/browser_use_cli.py \
       --replace-fail 'return [sys.executable, "-m", "browser_harness.run"]' \
         'return [os.environ.get("HERMES_PYTHON", sys.executable), "-m", "browser_harness.run"]'
     substituteInPlace hermes_cli/doctor_platform.py \
       --replace-fail '[sys.executable, "-c", "import hermes_cli.web_server"]' \
         '[os.environ.get("HERMES_PYTHON", sys.executable), "-c", "import hermes_cli.web_server"]'
+    substituteInPlace hermes_cli/gateway_runtime_start.py \
+      --replace-fail 'command = [sys.executable, "-m", "hermes_cli.main"' \
+        'command = [os.environ.get("HERMES_PYTHON", sys.executable), "-m", "hermes_cli.main"'
+    # `hermes gateway install` writes this interpreter into the service unit.
+    # A Python that PM installed into ~/.hermes/tools lacks Hermes' dependencies.
+    substituteInPlace hermes_cli/gateway.py \
+      --replace-fail 'return str(resolve_store_python(PROJECT_ROOT) or sys.executable)' \
+        'return os.environ.get("HERMES_PYTHON") or str(resolve_store_python(PROJECT_ROOT) or sys.executable)'
   '';
 
   # setup.py refuses to build wheels/sdists unless it knows this is a Nix
@@ -575,25 +635,28 @@ python3.pkgs.buildPythonApplication {
   '';
 
   pythonRelaxDeps = [
-    "openai"
-    "python-dotenv"
-    "tenacity"
-    "ruamel.yaml"
-    "requests"
-    "pydantic"
-    "pathspec"
-    "firecrawl-py"
-    "pyjwt"
-    "cryptography"
     "certifi"
+    "cryptography"
+    "firecrawl-py"
+    "openai"
     "packaging"
+    "pathspec"
+    "pydantic"
+    "pyjwt"
+    "python-dotenv"
+    "requests"
+    "ruamel.yaml"
+    "tenacity"
+    "truststore"
     "urllib3"
     "websockets"
     # nixpkgs moved past upstream's == pins
-    "rich"
-    "pillow"
     "croniter"
     "exa-py"
+    "markdown"
+    "pillow"
+    "prompt_toolkit"
+    "rich"
   ];
 
   # Only used by upstream's icon generator, which is not installed.
@@ -647,6 +710,13 @@ python3.pkgs.buildPythonApplication {
     # internals; assert submit() actually executes work on this Python.
     PYTHONPATH="$out/${python3.sitePackages}" \
       ${pythonEnv}/bin/python3 -c 'from tools.daemon_pool import DaemonThreadPoolExecutor; assert DaemonThreadPoolExecutor(max_workers=1).submit(lambda: 42).result(timeout=30) == 42'
+    # PM launches its scripts in the packaged runtime named by the install stamp.
+    # Run outside the source tree, so `pm` imports from $out beside the stamp.
+    pushd "$(mktemp -d)" >/dev/null
+    echo 'import packaging, tomli_w, truststore; from ruamel.yaml import YAML' > pm-check.py
+    PYTHONPATH="$out/${python3.sitePackages}" \
+      ${pythonEnv}/bin/python3 -c 'import pathlib, subprocess; from pm.runtime import runtime_command; subprocess.run(runtime_command(pathlib.Path("pm-check.py").resolve(), bootstrap=False), check=True)'
+    popd >/dev/null
   ''
   + lib.optionalString stdenv.hostPlatform.isLinux ''
     # Matrix E2EE: mautrix.crypto must import and the disable switch wired in.
@@ -656,7 +726,12 @@ python3.pkgs.buildPythonApplication {
 
   passthru = {
     category = "AI Assistants";
-    inherit hermes-frontend nemo-relay installStamp;
+    inherit
+      hermes-frontend
+      nemo-relay
+      installStamp
+      pmRuntime
+      ;
   };
 
   meta = with lib; {
