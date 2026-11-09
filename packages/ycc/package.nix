@@ -30,6 +30,7 @@
 
   # The web bundle is committed upstream and embedded by go:embed.
   passthru.category = "AI Coding Agents";
+  passthru.skipUpdate = true;
 
   meta = {
     description = "Docs-driven coding harness with a persistent daemon and web client";
