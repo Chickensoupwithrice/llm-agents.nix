@@ -641,6 +641,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 
 </details>
 <details>
+<summary><strong>ycc</strong> - Docs-driven coding harness with a persistent daemon and web client</summary>
+
+- **Source**: source
+- **License**: unfree
+- **Homepage**: https://github.com/whyrusleeping/ycc
+- **Usage**: `nix run github:numtide/llm-agents.nix#ycc -- --help`
+- **Nix**: [packages/ycc/package.nix](packages/ycc/package.nix)
+
+</details>
+<details>
 <summary><strong>zaly</strong> - Hackable terminal coding agent</summary>
 
 - **Source**: bytecode
