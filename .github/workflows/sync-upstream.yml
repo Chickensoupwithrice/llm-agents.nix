@@ -1,0 +1,35 @@
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'Chickensoupwithrice/llm-agents.nix'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Merge upstream main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/numtide/llm-agents.nix.git
+          git fetch upstream main
+          if ! git merge --no-edit upstream/main; then
+            echo "::error::Upstream merge failed. Resolve it locally and push main; no changes were pushed."
+            git merge --abort
+            exit 1
+          fi
+          git push origin HEAD:main

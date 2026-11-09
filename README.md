@@ -59,6 +59,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 
 </details>
 <details>
+<summary><strong>chock</strong> - Sandbox-first AI coding harness</summary>
+
+- **Source**: source
+- **License**: Apache-2.0
+- **Homepage**: https://chock.ws
+- **Usage**: `nix run github:numtide/llm-agents.nix#chock -- --help`
+- **Nix**: [packages/chock/package.nix](packages/chock/package.nix)
+
+</details>
+<details>
 <summary><strong>claude-code</strong> - Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster</summary>
 
 - **Source**: binary
@@ -163,7 +173,7 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 <summary><strong>crush</strong> - The glamourous AI coding agent for your favourite terminal</summary>
 
 - **Source**: source
-- **License**: MIT
+- **License**: FSL-1.1-MIT
 - **Homepage**: https://github.com/charmbracelet/crush
 - **Usage**: `nix run github:numtide/llm-agents.nix#crush -- --help`
 - **Nix**: [packages/crush/package.nix](packages/crush/package.nix)
@@ -518,6 +528,7 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 - **Homepage**: https://onorca.dev
 - **Usage**: `nix run github:numtide/llm-agents.nix#orca -- --help`
 - **Nix**: [packages/orca/package.nix](packages/orca/package.nix)
+- **Documentation**: See [packages/orca/README.md](packages/orca/README.md) for detailed usage
 
 </details>
 <details>
@@ -684,6 +695,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 
 </details>
 <details>
+<summary><strong>antigravity-hub</strong> - Desktop environment for managing multiple autonomous agents across independent projects</summary>
+
+- **Source**: binary
+- **License**: unfree
+- **Homepage**: https://antigravity.google
+- **Usage**: `nix run github:numtide/llm-agents.nix#antigravity-hub -- --help`
+- **Nix**: [packages/antigravity-hub/package.nix](packages/antigravity-hub/package.nix)
+
+</details>
+<details>
 <summary><strong>autolith</strong> - Live, self-modifying Common Lisp AI agent</summary>
 
 - **Source**: source
@@ -812,6 +833,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 - **Homepage**: https://github.com/multica-ai/multica
 - **Usage**: `nix run github:numtide/llm-agents.nix#multica-desktop -- --help`
 - **Nix**: [packages/multica-desktop/package.nix](packages/multica-desktop/package.nix)
+
+</details>
+<details>
+<summary><strong>nodecode</strong> - A self-modifying agent organism in SBCL</summary>
+
+- **Source**: source
+- **License**: MIT
+- **Homepage**: https://github.com/nodecode-ai/nodecode
+- **Usage**: `nix run github:numtide/llm-agents.nix#nodecode -- --help`
+- **Nix**: [packages/nodecode/package.nix](packages/nodecode/package.nix)
 
 </details>
 <details>
@@ -1037,6 +1068,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 
 </details>
 <details>
+<summary><strong>agent-manager</strong> - Terminal UI that runs coding-agent CLIs side by side, each in its own tmux session</summary>
+
+- **Source**: source
+- **License**: Apache-2.0
+- **Homepage**: https://agent-manager.dev
+- **Usage**: `nix run github:numtide/llm-agents.nix#agent-manager -- --help`
+- **Nix**: [packages/agent-manager/package.nix](packages/agent-manager/package.nix)
+
+</details>
+<details>
 <summary><strong>aven</strong> - Local-first task manager for power users and agents</summary>
 
 - **Source**: source
@@ -1187,6 +1228,26 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 
 </details>
 <details>
+<summary><strong>herdr-app</strong> - Herdr desktop app for terminals and coding agents</summary>
+
+- **Source**: source
+- **License**: Apache-2.0
+- **Homepage**: https://github.com/herdrdev/herdr-app
+- **Usage**: `nix run github:numtide/llm-agents.nix#herdr-app -- --help`
+- **Nix**: [packages/herdr-app/package.nix](packages/herdr-app/package.nix)
+
+</details>
+<details>
+<summary><strong>herdr-core</strong> - Terminals for coding agents that keep running</summary>
+
+- **Source**: source
+- **License**: Apache-2.0
+- **Homepage**: https://github.com/herdrdev/herdr-core
+- **Usage**: `nix run github:numtide/llm-agents.nix#herdr-core -- --help`
+- **Nix**: [packages/herdr-core/package.nix](packages/herdr-core/package.nix)
+
+</details>
+<details>
 <summary><strong>kandev</strong> - Manage tasks, orchestrate agents, review changes, and ship value</summary>
 
 - **Source**: source
@@ -1275,6 +1336,26 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 - **Homepage**: https://orbi.build
 - **Usage**: `nix run github:numtide/llm-agents.nix#orbi-cli -- --help`
 - **Nix**: [packages/orbi-cli/package.nix](packages/orbi-cli/package.nix)
+
+</details>
+<details>
+<summary><strong>ovis</strong> - Browser and phone client for herdr terminal workspaces</summary>
+
+- **Source**: source
+- **License**: MIT
+- **Homepage**: https://github.com/devswha/ovis
+- **Usage**: `nix run github:numtide/llm-agents.nix#ovis -- --help`
+- **Nix**: [packages/ovis/package.nix](packages/ovis/package.nix)
+
+</details>
+<details>
+<summary><strong>paseo</strong> - Self-hosted daemon and CLI for orchestrating coding agents</summary>
+
+- **Source**: source
+- **License**: Apache-2.0
+- **Homepage**: https://paseo.sh
+- **Usage**: `nix run github:numtide/llm-agents.nix#paseo -- --help`
+- **Nix**: [packages/paseo/package.nix](packages/paseo/package.nix)
 
 </details>
 <details>
@@ -1443,7 +1524,7 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 <details>
 <summary><strong>open-code-review</strong> - AI-powered code review CLI</summary>
 
-- **Source**: binary
+- **Source**: source
 - **License**: Apache-2.0
 - **Homepage**: https://github.com/alibaba/open-code-review
 - **Usage**: `nix run github:numtide/llm-agents.nix#open-code-review -- --help`
@@ -1497,7 +1578,7 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 <summary><strong>paseo-desktop</strong> - Voice-controlled desktop development environment for AI coding agents</summary>
 
 - **Source**: source
-- **License**: AGPL-3.0-or-later
+- **License**: Apache-2.0
 - **Homepage**: https://paseo.sh
 - **Usage**: `nix run github:numtide/llm-agents.nix#paseo-desktop -- --help`
 - **Nix**: [packages/paseo-desktop/package.nix](packages/paseo-desktop/package.nix)
@@ -1574,6 +1655,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 - **Homepage**: https://github.com/andrewyng/context-hub
 - **Usage**: `nix run github:numtide/llm-agents.nix#context-hub -- --help`
 - **Nix**: [packages/context-hub/package.nix](packages/context-hub/package.nix)
+
+</details>
+<details>
+<summary><strong>deja-vu</strong> - Local search and recall over the session history coding agents already write to disk</summary>
+
+- **Source**: source
+- **License**: MIT
+- **Homepage**: https://github.com/vshulcz/deja-vu
+- **Usage**: `nix run github:numtide/llm-agents.nix#deja-vu -- --help`
+- **Nix**: [packages/deja-vu/package.nix](packages/deja-vu/package.nix)
 
 </details>
 <details>
@@ -1655,6 +1746,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 - **Homepage**: https://github.com/MinishLab/semble
 - **Usage**: `nix run github:numtide/llm-agents.nix#semble -- --help`
 - **Nix**: [packages/semble/package.nix](packages/semble/package.nix)
+
+</details>
+<details>
+<summary><strong>tilth</strong> - Tree-sitter-powered code reading CLI and MCP server for AI agents</summary>
+
+- **Source**: source
+- **License**: MIT
+- **Homepage**: https://github.com/jahala/tilth
+- **Usage**: `nix run github:numtide/llm-agents.nix#tilth -- --help`
+- **Nix**: [packages/tilth/package.nix](packages/tilth/package.nix)
 
 </details>
 <details>
@@ -1754,6 +1855,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 - **Homepage**: https://github.com/vercel-labs/agent-browser
 - **Usage**: `nix run github:numtide/llm-agents.nix#agent-browser -- --help`
 - **Nix**: [packages/agent-browser/package.nix](packages/agent-browser/package.nix)
+
+</details>
+<details>
+<summary><strong>agent-desktop</strong> - Computer use for AI agents through the OS accessibility tree</summary>
+
+- **Source**: source
+- **License**: Apache-2.0
+- **Homepage**: https://github.com/vercel-labs/agent-desktop
+- **Usage**: `nix run github:numtide/llm-agents.nix#agent-desktop -- --help`
+- **Nix**: [packages/agent-desktop/package.nix](packages/agent-desktop/package.nix)
 
 </details>
 <details>
@@ -1914,6 +2025,16 @@ Nix packages for AI coding agents and development tools. Automatically updated d
 - **Homepage**: https://github.com/activeing123/mcptoon
 - **Usage**: `nix run github:numtide/llm-agents.nix#mcptoon -- --help`
 - **Nix**: [packages/mcptoon/package.nix](packages/mcptoon/package.nix)
+
+</details>
+<details>
+<summary><strong>mercat</strong> - Render markdown and mermaid diagrams in the terminal</summary>
+
+- **Source**: source
+- **License**: GPL-3.0-or-later
+- **Homepage**: https://github.com/tawago/mercat
+- **Usage**: `nix run github:numtide/llm-agents.nix#mercat -- --help`
+- **Nix**: [packages/mercat/package.nix](packages/mercat/package.nix)
 
 </details>
 <details>

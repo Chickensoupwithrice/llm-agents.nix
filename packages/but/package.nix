@@ -15,20 +15,23 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "but";
-  version = "0.22.3";
+  version = "0.23.2";
 
   src = fetchFromGitHub {
     owner = "gitbutlerapp";
     repo = "gitbutler";
     tag = "release/${finalAttrs.version}";
-    hash = "sha256-nW3yCbpbIhawLQVV+DptzGYiFBSKcyAP89NtDWHJM+0=";
+    hash = "sha256-JLsIlkbNRqjCgidgI33djWcseGkwsEBzw6g9q6eYoDg=";
   };
 
-  cargoHash = "sha256-XRc2yok9K7f/vRAqgO78JUq/U36XSiUeOINupfOOSjw=";
+  cargoHash = "sha256-Q+or42ppjjkt4OEc+cC2knTCkB7XloePpt2beHYG4q4=";
 
   # Upstream pins a specific stable channel; allow building with nixpkgs' rustc.
   postPatch = ''
     rm -f rust-toolchain.toml
+    # nixpkgs' rustc uses LLVM 21, whose vpdpbusd.256 signature does not match
+    # core::arch's; drop adler32furious' VNNI kernels until rustc uses LLVM 22.
+    patch -p1 -d "$cargoDepsCopy/source-registry-0/adler32furious-0.1.1" < ${./adler32furious-llvm21.patch}
   '';
 
   nativeBuildInputs = [

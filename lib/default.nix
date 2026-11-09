@@ -14,6 +14,11 @@ inputs."nixpkgs".lib.extend (
     };
 
     maintainers = prev.maintainers // {
+      sleroq = {
+        github = "sleroq";
+        githubId = 52239427;
+        name = "Sleroq";
+      };
       wanderer = {
         github = "wanderer";
         githubId = 158211;
@@ -23,6 +28,11 @@ inputs."nixpkgs".lib.extend (
         github = "RestartDK";
         githubId = 58006998;
         name = "Daniel Kumlin";
+      };
+      vshulcz = {
+        github = "vshulcz";
+        githubId = 99616188;
+        name = "vshulcz";
       };
       ak2k = {
         github = "ak2k";
@@ -328,6 +338,21 @@ inputs."nixpkgs".lib.extend (
         github = "cheerfulScumbag";
         githubId = 164391367;
         name = "cheerfulScumbag";
+      };
+      YoanWai = {
+        github = "YoanWai";
+        githubId = 106609173;
+        name = "Yoan Wainmann";
+      };
+      imkarrer = {
+        github = "imkarrer";
+        githubId = 7797790;
+        name = "Isaac Karrer";
+      };
+      arthurk = {
+        github = "arthurk";
+        githubId = 23406;
+        name = "Arthur Koziel";
       };
     };
   }

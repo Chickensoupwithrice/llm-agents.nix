@@ -1,26 +1,36 @@
 {
   lib,
   flake,
-  python3Packages,
+  python3,
   fetchFromGitHub,
   fetchPypi,
   rustPlatform,
 }:
 let
+  python3Packages = python3.pkgs.overrideScope (
+    final: prev: {
+      # fastmcp-slim 3.4.7 is marked broken against mcp >= 2, so pin the
+      # whole scope to mcp 1.x where nixpkgs ships it as `mcp_1`. Drop this
+      # once fastmcp 4.x lands (NixOS/nixpkgs#563493). Pins that predate
+      # `mcp_1` still carry mcp 1.x as `mcp`.
+      mcp = final.mcp_1 or prev.mcp;
+    }
+  );
+
   toktok-rs = python3Packages.buildPythonPackage rec {
     pname = "toktok-rs";
-    version = "0.1.4";
+    version = "0.3.0";
     pyproject = true;
 
     src = fetchPypi {
       pname = "toktok_rs";
       inherit version;
-      hash = "sha256-VmlGDK4Mdlxhg6ZIrrDxK7YnQ/HfRQ+QqwUeYq+DxCY=";
+      hash = "sha256-qQEGxQgC+UuIVBa2Z73i2yPwd49+pgKgQL1usBWom5w=";
     };
 
     cargoDeps = rustPlatform.fetchCargoVendor {
       inherit pname version src;
-      hash = "sha256-N6dunFUwDgTIk8ecvaBv+HR1tQo0bZUn9bJz2ht360c=";
+      hash = "sha256-2MXam95XcTOqBgaVZep/ewmqhV/vq3kMLBGj/4PogSc=";
     };
 
     nativeBuildInputs = with rustPlatform; [
@@ -71,13 +81,13 @@ let
 in
 python3Packages.buildPythonApplication rec {
   pname = "hindsight";
-  version = "1.0.0";
+  version = "1.1.0";
 
   src = fetchFromGitHub {
     owner = "vectorize-io";
     repo = "hindsight";
     tag = "v${version}";
-    hash = "sha256-gfrWtZcEUGVSzmwhlkwav4fv1Gz2ulj3LlWzYWNrWQ0=";
+    hash = "sha256-0+BuUhlf3mljlo9F9cVLcnOORZhMlK1mFY7Cqem6oYs=";
   };
 
   sourceRoot = "${src.name}/hindsight-api-slim";
