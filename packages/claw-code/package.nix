@@ -4,6 +4,9 @@
   fetchFromGitHub,
   rustPlatform,
   git,
+  pkg-config,
+  oniguruma,
+  sqlite,
   versionCheckHook,
 }:
 
@@ -14,13 +17,25 @@ rustPlatform.buildRustPackage rec {
   src = fetchFromGitHub {
     owner = "ultraworkers";
     repo = "claw-code";
-    rev = "6a29e0888308f0aff9724c108edfba5106a2f9bf";
-    hash = "sha256-s2K6+j4nAAKcvG1OevZZW8HPw5sL/QfJfbkRhdZKKYE=";
+    rev = "f51a33a8960d167288db295d1d02ff9cc0586abf";
+    hash = "sha256-Y4bfkGN8KWG8nRy6zAUYkZ+DRcZTHRaZpSRllzh4CFI=";
   };
 
   sourceRoot = "source/rust";
 
   cargoHash = "sha256-hQQIlsyvbz5slKnADYBbFUtk58KPEhLklTfYoCJSEUY=";
+
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    oniguruma
+    sqlite
+  ];
+
+  env = {
+    LIBSQLITE3_SYS_USE_PKG_CONFIG = "1";
+    RUSTONIG_SYSTEM_LIBONIG = "1";
+  };
 
   cargoBuildFlags = [
     "--package"
