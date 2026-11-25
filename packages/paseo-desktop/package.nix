@@ -37,18 +37,18 @@
 
 buildNpmPackage (finalAttrs: {
   pname = "paseo-desktop";
-  version = "0.15.4";
+  version = "0.17.4";
 
   src = fetchFromGitHub {
     owner = "getpaseo";
     repo = "paseo";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-zqD9MrqYZ6S3O72b5y+7P0iJgIMf4MRq1zgcqBcyhko=";
+    hash = "sha256-KELKb9ZE+f0VApAObUd8iFxlkdvEOsOKuokTWmhHcJY=";
   };
 
   nodejs = nodejs_22;
 
-  npmDepsHash = "sha256-a8IgSFKtCzql2c2hCbhxxXnSzEUHRC6dGnBuQhgN2Jg=";
+  npmDepsHash = "sha256-YIIpZBYIBDiP3icmboePO3S+RWNUFyeEMyNVonqxo64=";
   npmDepsFetcherVersion = 2;
 
   # Prevent onnxruntime-node's install script from running during automatic
@@ -78,6 +78,9 @@ buildNpmPackage (finalAttrs: {
 
   buildPhase = ''
     runHook preBuild
+
+    # --ignore-scripts also skips the root postinstall that applies patches/
+    npm run postinstall
 
     # Native deps (terminal emulation; libuv-linked on Linux).
     # node-gyp-build skips compilation when a matching prebuilt binary exists,
